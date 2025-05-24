@@ -1,0 +1,33 @@
+{
+  "name": "chrome-extension-rss",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:bg": "vite build --config vite.bg.config.js",
+    "build:all": "vite build && vite build --config vite.bg.config.js && cp manifest.json dist/",
+    "preview": "vite preview",
+    "postinstall": "node scripts/convert-cjs-to-esm.js"
+  },
+  "dependencies": {
+    "@nuxt/fonts": "0.11.2",
+    "@nuxt/icon": "1.12.0",
+    "@nuxt/image": "1.10.0",
+    "@nuxt/ui": "^3.1.2",
+    "@nuxtjs/color-mode": "^3.5.2",
+    "@vueuse/core": "^13.2.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.5",
+    "@types/chrome": "^0.0.322",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "esbuild": "^0.25.4",
+    "lightningcss-wasm": "^1.30.1",
+    "tailwindcss": "^4.1.6",
+    "vite": "^5.4.19"
+  }
+}
