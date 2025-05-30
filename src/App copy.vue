@@ -30,6 +30,9 @@
               class="flex-1"
               icon="i-lucide-search"
             />
+              <div v-show="isUrl">
+                <UButton size="xl" @click="onSubscribe">Subscribe</UButton>
+              </div>
           </form>
 
           <!-- 刷新按钮和最后更新时间 -->
@@ -60,6 +63,28 @@
         </div>
       
       </div>
+
+      <PreviewModal
+        v-if="showModal"
+        :url="searchQuery"
+        :preview-items="previewWebsiteSubjectItems"
+        @add-subscribe="_onAddSubscribe"
+        @close="showModal = false"
+      >
+        <template #preview>
+          <!-- <div v-if="loadingIframe">Loading...</div> -->
+          <UInput v-model="articleTitle" class="w-full" placeholder="Please website title" />
+          <UInput v-model="saveRSSCssSelector" class="w-full" placeholder="Please add css selector" />
+          <!-- <iframe
+            :srcdoc="searchHtmlCode"
+            sandbox="allow-same-origin"
+            frameborder="0"
+            width="100%"
+            height="100%"
+            @load="_onIframeLoad"
+          /> -->
+        </template>
+      </PreviewModal>
     </div>
 
     <UModal v-model:open="openSubscribeModal" :dismissible="false" title="Edit RSS" :description="subscribeInfo.name" :ui="{ footer: 'justify-end' }">
@@ -114,13 +139,8 @@
       </template>
 
       <template #footer>
-        <div class="w-full flex justify-between items-center">
-          <UButton label="Delete" color="error" @click="onDelete" />
-          <div>
-            <UButton label="Cancel" color="neutral" variant="outline" @click="openSubscribeModal = false" />
-            <UButton label="Submit" color="neutral" @click="onSubmit" />
-          </div>
-        </div>
+        <UButton label="Cancel" color="neutral" variant="outline" @click="openSubscribeModal = false" />
+        <UButton label="Submit" color="neutral" @click="onSubmit" />
       </template>
     </UModal>
   </UApp>
@@ -144,6 +164,37 @@ const db = new RSSDatabase();
   const data = await db.getAllFeeds();
   allFeeds.value = data;
 })()
+
+const articleTitle = ref('') 
+const saveRSSCssSelector = ref('')
+const previewWebsiteSubjectItems = ref<{id: number; title: string; link: string}[]>([])
+
+async function _onAddSubscribe() {
+  try {
+    // 添加订阅
+    const feedId = await db.addFeed({
+      name: articleTitle.value,
+      url: searchQuery.value.trim(),
+      cssSelector: saveRSSCssSelector.value,
+      subjectList: []
+    });
+    console.log('Added feed with ID:', feedId);
+  } catch (error) {
+    console.log('Add feed failure', error)
+  }
+}
+
+const showModal = ref(false)
+// 判断字符串是否为URL
+const isUrl = computed(() => {
+  const url = searchQuery.value.trim()
+
+  if(url.startsWith('http://') || url.startsWith('https://') || url.startsWith('www.')) {
+    return true
+  }
+
+  return false
+})
 
 const colorMode = useColorMode()
 const navigationBarItems = ref<NavigationMenuItem[][]>([
@@ -176,7 +227,6 @@ const navigationBarItems = ref<NavigationMenuItem[][]>([
     {
       label: 'Subscribe',
       icon: 'i-lucide-database',
-      defaultOpen: true,
       children: []
     },
   ],
@@ -233,19 +283,6 @@ const subscribeInfo = ref<Omit<RSSFeed, 'createdAt' | 'updatedAt'>>({
   subjectList: [],
   latestCount: 0
 })
-
-async function onDelete() {
-  try {
-    if (subscribeInfo.value.id !== -1) {
-      await db.deleteFeed(subscribeInfo.value.id)
-      allFeeds.value = await db.getAllFeeds()
-      toast.add({ color: 'primary', title: 'Deleted successfully' })
-    }
-    openSubscribeModal.value = false
-  } catch (error) {
-    toast.add({ color: 'error', title: 'Failed to delete', description: error?.toString() })
-  }
-}
 async function onSubmit(event) {
   // 保存订阅信息到数据库
   try {
@@ -256,7 +293,7 @@ async function onSubmit(event) {
         cssSelector: subscribeInfo.value.cssSelector.trim(),
         subjectList: [],
       })
-      chrome && chrome.runtime.sendMessage({ type: 'ADD_FEED', payload: {
+      chrome.runtime.sendMessage({ type: 'ADD_FEED', payload: {
           id: feedId,
           name: subscribeInfo.value.name.trim(),
           url: subscribeInfo.value.url.trim(),
@@ -329,11 +366,34 @@ const handleSearch = () => {
   }
 }
 
+// ------------------------------------------
+const searchHtmlCode = ref('')
+const loadingIframe = ref(false)
+const onSubscribe = () => {
+  // const url = searchQuery.value.trim()
+  // loadingIframe.value = true
+  // searchHtmlCode.value = ''
+
+  // fetch("http://api.scrape.do?token=6cf9eee2ee0441c2b51dc636fd4a71a03736d743f41&url=" + url, {
+  //   method: "get",
+  // })
+  // .then(response => response.text())
+  // .then(html => {
+  //   const URLData = new URL(url)
+  //   searchHtmlCode.value = addBaseTag(html, URLData.origin)
+  // }).finally(() => {
+  //   loadingIframe.value = false
+  // })
+
+  showModal.value = true
+}
+// --------------------------------------------------
+
 const loadingFeeds = ref(false);
 const lastUpdateTime = ref<number|null>(null);
 
 function refreshFeeds() {
-  chrome && chrome.runtime.sendMessage({ type: 'PAGE_REFRESH' });
+  chrome.runtime.sendMessage({ type: 'PAGE_REFRESH' });
 }
 
 function formatTime(ts: number) {
@@ -346,22 +406,10 @@ const stored = localStorage.getItem(LAST_UPDATE_TIME);
 if (stored) lastUpdateTime.value = Number(stored);
 
 onMounted(() => {
-  chrome && chrome.runtime.onMessage.addListener((message) => {
+  chrome.runtime.onMessage.addListener((message) => {
     console.log('Received message:', message);
     if (message.type === 'FEEDS_UPDATE_START') {
       loadingFeeds.value = true;
-    } else if (message.type === 'FEED_UPDATE_END') {
-      loadingFeeds.value = false;
-      if (message.success) {
-        db.getAllFeeds().then(data => {
-          allFeeds.value = data;
-        });
-      } else {
-        toast.add({
-          color: 'error',
-          title: 'Add Feed Fail',
-        })
-      }
     } else if (message.type === 'FEEDS_UPDATE_END') {
       loadingFeeds.value = false;
       if (message.success) {

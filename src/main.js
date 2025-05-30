@@ -18,6 +18,7 @@ app.mount('#app')
 // 监听页面刷新事件
 window.addEventListener('load', () => {
   if (chrome.runtime) {
-    chrome.runtime.sendMessage({ type: 'PAGE_REFRESH' });
+    // 暂时注释掉，因为会导致页面请去过多
+    // chrome.runtime.sendMessage({ type: 'PAGE_REFRESH' });
   }
 });

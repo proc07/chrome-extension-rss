@@ -3,8 +3,8 @@ import path from "path";
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from "@tailwindcss/vite";
 import ui from '@nuxt/ui/vite';
-import icons from '@nuxt/icon';
 import fs from 'fs';
+import icons from 'unplugin-icons/vite';
 
 function pathReplacer() {
   return {
@@ -34,7 +34,7 @@ export default defineConfig({
       icons: {
         autoInstall: true,
         collections: ['simple-icons']
-      }
+      },
     }),
     icons(),
     tailwindcss()
