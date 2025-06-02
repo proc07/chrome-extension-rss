@@ -1,5 +1,45 @@
-# Vue 3 + Vite
+# RSS Focus Chrome Extension
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+一个简单高效的RSS订阅管理Chrome扩展，帮助您聚焦于重要内容。
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## 主要功能
+
+- 1. **订阅管理**：支持增删改查订阅源，可通过模态框配置名称、URL和CSS选择器
+- 2. **内容抓取**：后台脚本自动打开新标签页获取网页内容，通过CSS选择器提取结构化数据
+- 3. **智能去重**：采用IndexedDB存储订阅数据，自动合并新旧内容并标记新增条目
+- 4. **可视化提示**：在订阅列表中显示新增条目数量，帮助用户快速识别新内容
+- 5. **推荐订阅**：首次使用时展示推荐订阅源列表，用户可一键添加感兴趣的内容
+- 6. **更新通知**：当推荐订阅源列表更新时，通知用户并提供选择添加的机会
+
+## 技术实现
+
+- 使用Vue3和Nuxt UI构建用户界面
+- 采用IndexedDB实现本地数据存储
+- 通过Chrome扩展API实现后台内容抓取
+- 支持暗色/亮色主题切换
+- 版本控制机制确保推荐内容及时更新
+
+## 使用方法
+
+1. 安装扩展后，首次打开会展示推荐订阅源列表
+2. 选择感兴趣的订阅源，点击"添加所选"按钮
+3. 系统会自动获取内容并显示在主界面
+4. 通过左侧导航栏可以管理订阅、添加新订阅或查看推荐
+5. 点击刷新按钮可以更新所有订阅内容
+
+## 自定义订阅
+
+1. 点击"Add Feed"按钮打开添加界面
+2. 填写名称、网址和CSS选择器
+3. 点击"Submit"保存并自动获取内容
+
+## 数据更新机制
+
+- 扩展会自动检测follow.json文件的版本变化
+- 当有新版本时，会通知用户并提供更新选项
+- 用户可以选择查看新推荐并添加到自己的订阅列表
+
+## todolist
+- [x] 多个网站的展示 UI 设计
+- [x] 网站的内容提取，不只是标题，可以任意想要的内容
+- [x] 高效的 css 选择器

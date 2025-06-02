@@ -141,7 +141,9 @@ export default class RSSDatabase {
 
   // 根据URL获取订阅
   public async getFeedByUrl(url: string): Promise<RSSFeed | undefined> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) {
+      await this.init();
+    }
 
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readonly');

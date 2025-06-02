@@ -10,11 +10,14 @@ declare module 'vue' {
   export interface GlobalComponents {
     FeedList: typeof import('./src/components/FeedList.vue')['default']
     PreviewModal: typeof import('./src/components/PreviewModal.vue')['default']
+    RecommendedFeeds: typeof import('./src/components/RecommendedFeeds.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     UApp: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/App.vue')['default']
     UAvatar: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Avatar.vue')['default']
+    UBadge: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Badge.vue')['default']
     UButton: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
+    UCheckbox: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Checkbox.vue')['default']
     UForm: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Form.vue')['default']
     UFormField: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/FormField.vue')['default']
     UIcon: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/vue/components/Icon.vue')['default']
@@ -23,6 +26,7 @@ declare module 'vue' {
     UModal: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
     UNavigationMenu: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/NavigationMenu.vue')['default']
     USeparator: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Separator.vue')['default']
+    UTabs: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Tabs.vue')['default']
     UTextarea: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Textarea.vue')['default']
     UTooltip: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Tooltip.vue')['default']
   }

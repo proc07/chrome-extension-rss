@@ -8,9 +8,8 @@ defineProps<{
 </script>
 
 <template>
-  <div class="mb-[10px]">
-    <h3 class="text-center p-4 bg-elevated/100 text-sm font-bold border-r border-[#e2e8f1]">{{ data.name }}</h3>
-    <div class="h-[500px] overflow-y-auto divide-y divide-default bg-elevated/50">
+  <div class="h-full">
+    <div class="h-full overflow-y-auto divide-y divide-default bg-elevated/50">
       <div
         v-for="(subject, index) in data.subjectList"
         :key="index"

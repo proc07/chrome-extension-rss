@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
   chrome.runtime.sendMessage({type: 'FEEDS_UPDATE_START'});
 
   if (message.type === 'PAGE_REFRESH') {
-    console.log(isInitialized);
+    console.log('PAGE_REFRESH -> ', isInitialized);
     if (!isInitialized) {
       await db.init();
       isInitialized = true;
@@ -130,7 +130,6 @@ async function handleFeedsUpdate(feed: RSSFeed) {
           newAddedCount++
         }
       }
-      console.log(merged, 'merged');
       await db.updateFeed(id, {
         ...feed,
         subjectList: merged,

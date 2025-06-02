@@ -55,13 +55,43 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <FeedList v-for="feeds in allFeeds" :key="feeds.id" :data="feeds" />
+        <div class="flex flex-col h-full overflow-hidden">
+          <!-- 使用UTabs组件替换左侧Feed标题列表 -->
+          <UTabs
+            v-model="selectedFeed"
+            :items="feedTabItems"
+            orientation="vertical"
+            class="h-full items-start"
+            :ui="{
+              list: 'overflow-y-auto max-h-full',
+              trigger: 'w-full h-auto py-2 px-3'
+            }"
+          >
+            <template #default="{ item, index }">
+              <div class="flex justify-between w-full">
+                <span class="truncate">{{ item.label }}</span>
+                <UBadge v-if="item.badge && item.badge > 0" color="primary" size="xs">{{ item.badge }}</UBadge>
+              </div>
+            </template>
+            <template #content>
+              <!-- 右侧 Feed 内容 -->
+              <div class="flex-1 h-[calc(100vh-168px)] overflow-y-auto">
+                <FeedList 
+                  v-if="selectedFeed !== null && getFeedById(Number(selectedFeed))" 
+                  :data="getFeedById(Number(selectedFeed))" 
+                />
+                <div v-else class="flex items-center justify-center h-full text-gray-500">
+                  <p>请选择一个订阅源</p>
+                </div>
+              </div>
+            </template>
+          </UTabs>
         </div>
       
       </div>
     </div>
 
+    <!-- 订阅编辑模态框 -->
     <UModal v-model:open="openSubscribeModal" :dismissible="false" title="Edit RSS" :description="subscribeInfo.name" :ui="{ footer: 'justify-end' }">
       <template #body>
         <UForm
@@ -97,7 +127,6 @@
             </UFormField>
             <USeparator />
             <UFormField
-              required
               name="cssSelector"
               label="Css Selector"
               class="flex max-sm:flex-col justify-between items-start gap-4"
@@ -123,39 +152,122 @@
         </div>
       </template>
     </UModal>
+
+    <!-- 推荐订阅源模态框 -->
+    <UModal v-model:open="openRecommendModal" :fullscreen="true" :dismissible="false" title="推荐订阅源">
+      <template #body>
+        <RecommendedFeeds :onClose="() => openRecommendModal = false" @update="updateFeeds" />
+      </template>
+    </UModal>
+
+    <!-- 更新通知模态框 -->
+    <UModal v-model:open="openUpdateModal" :dismissible="true" title="发现新的推荐订阅源">
+      <template #body>
+        <div class="p-4">
+          <p class="mb-4">我们更新了推荐订阅源列表，您想查看并添加新的订阅源吗？</p>
+          <div class="flex justify-end gap-2">
+            <UButton label="稍后再说" variant="outline" @click="openUpdateModal = false" />
+            <UButton label="查看更新" color="primary" @click="showRecommendModal" />
+          </div>
+        </div>
+      </template>
+    </UModal>
   </UApp>
 </template>
 
 <script setup lang="ts">
 import { useColorMode, useLocalStorage } from '@vueuse/core'
 import { ref, computed, effect, onMounted } from 'vue'
-import type { FormSubmitEvent, NavigationMenuItem } from '@nuxt/ui'
+import type { FormSubmitEvent, NavigationMenuItem, TabsItem } from '@nuxt/ui'
 import FeedList from '~/components/FeedList.vue'
+import RecommendedFeeds from '~/components/RecommendedFeeds.vue'
 import RSSDatabase from '~/utils/IndexedDB'
 import type { RSSFeed } from '~/utils/IndexedDB'
 
 const toast = useToast()
 const allFeeds = ref<RSSFeed[]>([])
 const db = new RSSDatabase();
+const openRecommendModal = ref(false);
+const openUpdateModal = ref(false);
+const isFirstVisit = ref(false);
+const selectedFeed = ref<string | null>(null);
+
+// 根据ID获取Feed
+function getFeedById(id: number) {
+  return allFeeds.value.find(feed => feed.id === id);
+}
+
+// 将allFeeds转换为TabsItem数组
+const feedTabItems = computed<TabsItem[]>(() => {
+  return allFeeds.value.map(feed => ({
+    label: feed.name,
+    value: String(feed.id),
+    badge: feed.latestCount
+  }));
+});
+
 // 初始化数据库
 (async () => {
   await db.init();
   // 获取所有订阅
   const data = await db.getAllFeeds();
   allFeeds.value = data;
-})()
+  
+  // 如果有订阅源，默认选择第一个
+  if (allFeeds.value.length > 0) {
+    selectedFeed.value = String(allFeeds.value[0].id);
+  }
 
+  // 检查是否是首次访问
+  const visited = localStorage.getItem('visited');
+  if (!visited) {
+    isFirstVisit.value = true;
+    localStorage.setItem('visited', 'true');
+    openRecommendModal.value = true;
+  } else {
+    // 检查推荐源是否有更新
+    checkFollowJsonUpdate();
+  }
+})();
+
+// 检查follow.json是否有更新
+async function checkFollowJsonUpdate() {
+  try {
+    // 从localStorage获取已保存的版本号
+    const savedVersion = localStorage.getItem('followJsonVersion') || '';
+    
+    // 获取当前follow.json的版本号
+    const response = await fetch(chrome.runtime.getURL('follow.json'));
+    const data = await response.json();
+    const currentVersion = data.version || '1';
+    
+    // 如果版本不同且不是首次访问，显示更新通知
+    if (savedVersion && savedVersion !== currentVersion) {
+      openUpdateModal.value = true;
+    }
+  } catch (error) {
+    console.error('检查更新失败:', error);
+  }
+}
+
+// 显示推荐模态框
+function showRecommendModal() {
+  openUpdateModal.value = false;
+  openRecommendModal.value = true;
+}
+
+// 更新订阅列表
+async function updateFeeds() {
+  const data = await db.getAllFeeds();
+  allFeeds.value = data;
+}
+const SUBSCRIBES = 'Subscribes'
 const colorMode = useColorMode()
 const navigationBarItems = ref<NavigationMenuItem[][]>([
   [
     {
       label: 'RSS Focus',
       type: 'label'
-    },
-    {
-      label: 'Home',
-      icon: 'i-lucide-house',
-      to: '/',
     },
     {
       label: 'Add Feed',
@@ -174,7 +286,15 @@ const navigationBarItems = ref<NavigationMenuItem[][]>([
       }
     },
     {
-      label: 'Subscribe',
+      label: 'Recommended',
+      icon: 'i-lucide-star',
+      onSelect(e: Event) {
+        e.preventDefault()
+        openRecommendModal.value = true
+      }
+    },
+    {
+      label: SUBSCRIBES,
       icon: 'i-lucide-database',
       defaultOpen: true,
       children: []
@@ -212,7 +332,7 @@ const navigationBarItems = ref<NavigationMenuItem[][]>([
     {
       label: 'GitHub',
       icon: 'i-simple-icons-github',
-      badge: '3.8k',
+      badge: '0.1k',
       to: 'https://github.com/proc07',
       target: '_blank'
     },
@@ -280,7 +400,7 @@ async function onSubmit(event) {
   }
 }
 
-const subscribeIndex = navigationBarItems.value[0].findIndex(item => item.label === 'Subscribe')
+const subscribeIndex = navigationBarItems.value[0].findIndex(item => item.label === SUBSCRIBES)
 effect(() => {
   const newChildren = allFeeds.value.map(feed => ({
     label: feed.name,
