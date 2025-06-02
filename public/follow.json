@@ -2,11 +2,6 @@
   "version": "2",
   "default": [
     {
-      "name": "WindRunnerMax 的高质量技术博客",
-      "url": "https://github.com/WindRunnerMax/EveryDay/blob/master/Timeline.md",
-      "cssSelector": "#repo-content-pjax-container > react-app > div > div > div.Box-sc-g0xbh4-0.prc-PageLayout-PageLayoutRoot-1zlEO > div > div > div.Box-sc-g0xbh4-0.prc-PageLayout-ContentWrapper-b-QRo.CodeView-module__SplitPageLayout_Content--qxR1C > div.prc-PageLayout-Content--F7-I > div > div:nth-child(3) > div.Box-sc-g0xbh4-0.ldRxiI > div > div.Box-sc-g0xbh4-0.hycJXc > section > div > article > p > a"
-    },
-    {
       "name": "自己的 Github 主页",
       "url": "https://github.com/",
       "cssSelector": "article .lh-condensed .Link"
