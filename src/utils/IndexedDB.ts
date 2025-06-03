@@ -1,3 +1,4 @@
+import { getFollows } from './request'
 export interface RSSFeed {
   id?: number; // 自增ID
   name: string;
@@ -23,9 +24,8 @@ export default class RSSDatabase {
     if (!this.db) return
 
     try {
-      const response = await fetch(chrome.runtime.getURL('follow.json'));
-      const { default: feeds } = await response.json();
-
+      const data = await getFollows();
+      const { default: feeds } = data;
       for (const feed of feeds) {
         const existingFeed = await this.getFeedByUrl(feed.url);
         if (!existingFeed) {
@@ -33,7 +33,6 @@ export default class RSSDatabase {
         }
       }
     } catch (error) {
-      console.error('数据导入失败:', error);
       throw error;
     }
   }

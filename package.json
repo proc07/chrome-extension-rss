@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:bg": "vite build --config vite.bg.config.js",
-    "build:all": "vite build && vite build --config vite.bg.config.js && cp manifest.json dist/",
+    "build:all": "vite build && vite build --config vite.bg.config.js && cp manifest.json dist/ && npm run copy:popup",
+    "copy:popup": "mkdir -p dist/popup && cp -r popup/* dist/popup/",
     "preview": "vite preview",
     "postinstall": "node scripts/convert-cjs-to-esm.js"
   },

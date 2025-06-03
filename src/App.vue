@@ -69,7 +69,13 @@
           >
             <template #default="{ item, index }">
               <div class="flex justify-between w-full">
-                <span class="truncate">{{ item.label }}</span>
+                <UTooltip
+                  arrow
+                  :content="{ align: 'center', side: 'right', sideOffset: 8 }"
+                  :text="item.label"
+                >
+                  <span class="truncate">{{ item.label }}</span>
+                </UTooltip>
                 <UBadge v-if="item.badge && item.badge > 0" color="primary" size="xs">{{ item.badge }}</UBadge>
               </div>
             </template>
@@ -176,6 +182,7 @@
 </template>
 
 <script setup lang="ts">
+import {getFollows } from '~/utils/request'
 import { useColorMode, useLocalStorage } from '@vueuse/core'
 import { ref, computed, effect, onMounted } from 'vue'
 import type { FormSubmitEvent, NavigationMenuItem, TabsItem } from '@nuxt/ui'
@@ -237,13 +244,13 @@ async function checkFollowJsonUpdate() {
     const savedVersion = localStorage.getItem('followJsonVersion') || '';
     
     // 获取当前follow.json的版本号
-    const response = await fetch(chrome.runtime.getURL('follow.json'));
-    const data = await response.json();
-    const currentVersion = data.version || '1';
+    const data = await getFollows()
+    const currentVersion = data.version;
     
     // 如果版本不同且不是首次访问，显示更新通知
     if (savedVersion && savedVersion !== currentVersion) {
       openUpdateModal.value = true;
+      localStorage.setItem('followJsonVersion', currentVersion) 
     }
   } catch (error) {
     console.error('检查更新失败:', error);

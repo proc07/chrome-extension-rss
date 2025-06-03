@@ -29,10 +29,12 @@ chrome.runtime.onMessage.addListener(async (message) => {
     }
 
     try {
+      const concurrentNumber = 3;
       const allFeeds = await db.getAllFeeds();
-      // 遍历处理每个订阅（移动至 async IIFE 内部）
-      for (const feed of allFeeds) {
-        await handleFeedsUpdate(feed);
+
+      for (let i = 0; i < allFeeds.length; i += concurrentNumber) {
+        const batch = allFeeds.slice(i, i + concurrentNumber);
+        await Promise.allSettled(batch.map(feed => handleFeedsUpdate(feed)));
       }
       // 发送结束loading状态
       chrome.runtime.sendMessage({type: 'FEEDS_UPDATE_END', success: true});
