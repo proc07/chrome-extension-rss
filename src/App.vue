@@ -46,10 +46,10 @@
             <div class="text-sm text-gray-500 flex items-center gap-1">
               <UIcon name="i-lucide-clock" class="w-4 h-4" />
               <span v-if="lastUpdateTime">
-                最后更新: {{ formatTime(lastUpdateTime) }}
+                Last updated: {{ formatTime(lastUpdateTime) }}
               </span>
               <span v-else>
-                暂无更新记录
+                No update records yet
               </span>
             </div>
           </div>
@@ -366,6 +366,7 @@ async function onDelete() {
     if (subscribeInfo.value.id !== -1) {
       await db.deleteFeed(subscribeInfo.value.id)
       allFeeds.value = await db.getAllFeeds()
+      selectedFeed.value = allFeeds.value[0]?.id?.toString() || null
       toast.add({ color: 'primary', title: 'Deleted successfully' })
     }
     openSubscribeModal.value = false
@@ -377,14 +378,7 @@ async function onSubmit(event) {
   // 保存订阅信息到数据库
   try {
     if (subscribeInfo.value.id === -1) {
-      const feedId = await db.addFeed({
-        name: subscribeInfo.value.name.trim(),
-        url: subscribeInfo.value.url.trim(),
-        cssSelector: subscribeInfo.value.cssSelector.trim(),
-        subjectList: [],
-      })
       chrome && chrome.runtime.sendMessage({ type: 'ADD_FEED', payload: {
-          id: feedId,
           name: subscribeInfo.value.name.trim(),
           url: subscribeInfo.value.url.trim(),
           cssSelector: subscribeInfo.value.cssSelector.trim(),

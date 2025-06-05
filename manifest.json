@@ -16,11 +16,6 @@
       "type": "module"
   },
   "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["./popup/popup.js"],
-      "run_at": "document_start"
-    }
   ],
   "content_security_policy": {
      "extension_pages": "script-src 'self'; object-src 'self'"

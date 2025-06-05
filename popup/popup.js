@@ -3,18 +3,22 @@ let selector = '';
 let subjectList = [];
 let latestCount = 0;
 
+// 获取保存的选择器状态
+chrome.storage.local.get(['tabId', 'savedSelector'], function(data) {
+  chrome.tabs.query({active:true,currentWindow:true}, tabs => {
+    if (data.tabId === tabs[0].id && data.savedSelector) {
+        selector = data.savedSelector;
+        selectorInfo.textContent = '选择器: ' + selector;
+        confirmBtn.disabled = false;
+        tip.textContent = '请点击“确认添加”按钮';
+    }
+  });
+});
+
 const selectBtn = document.getElementById('select-link-btn');
 const confirmBtn = document.getElementById('confirm-add-btn');
 const selectorInfo = document.getElementById('selector-info');
 const tip = document.getElementById('popup-tip');
-
-// 注入内容脚本
-function injectContentScript(fn) {
-  const script = document.createElement('script');
-  script.textContent = '(' + fn.toString() + ')();';
-  (document.head||document.documentElement).appendChild(script);
-  script.remove();
-}
 
 // 选择节点按钮
 selectBtn.onclick = () => {
@@ -26,25 +30,15 @@ selectBtn.onclick = () => {
   chrome.tabs.query({active:true,currentWindow:true}, tabs => {
     chrome.scripting.executeScript({
       target: {tabId: tabs[0].id},
-      func: contentSelectLinks
+      func: contentSelectLinks,
+      args: [tabs[0].id]
     });
   });
-  // 监听内容脚本返回的消息
-  chrome.runtime.onMessage.addListener(function listener(message, sender, sendResponse) {
-    console.log('message', message);
-    if (message.type === 'RSS_SELECTOR_PICKED') {
-      selector = message.cssSelector;
-      selectorInfo.textContent = '选择器: ' + selector;
-      confirmBtn.disabled = false;
-      tip.textContent = '请确认添加';
-      chrome.runtime.onMessage.removeListener(listener);
-    }
-  });
+  
 };
 
-
 // 内容脚本逻辑
-function contentSelectLinks() {
+function contentSelectLinks(tabId) {
   const f = /(\.|\[|\]|,|=|@|!|#|\$|%|&|'|\*|\+|\/|\?|\^|\{|\||\}|~|;)/;
   const g = /\d{6}$/
   const S = /[0-9a-f]{32}/
@@ -101,7 +95,7 @@ function contentSelectLinks() {
           link.addEventListener("click", (event) => {
               _onClickElement(event, similarElements, function onSelectGroup(data) {
                 console.log('onSelectGroup', data);
-                chrome.runtime.sendMessage({ type: 'RSS_SELECTOR_PICKED', cssSelector: data.cssSelector });
+                chrome.storage.local.set({ tabId, savedSelector: data.cssSelector });
               });
           });
 
@@ -348,25 +342,21 @@ function contentSelectLinks() {
   }
 }
 
-// 移除 window.addEventListener('message', ...) 监听
 // 确认添加按钮
 confirmBtn.onclick = async () => {
   const [tab] = await chrome.tabs.query({active:true,currentWindow:true});
   const url = tab.url;
   const name = tab.title;
-  // 获取 subjectList
-  const subjectList = await chrome.scripting.executeScript({
-    target: {tabId: tab.id},
-    func: sel => Array.from(document.querySelectorAll(sel)).map(a=>a.innerText),
-    args: [selector]
-  });
-  // latestCount
-  latestCount = subjectList[0].result.length;
   // 写入 indexdb
-  console.log('sendMessage', name, url, selector, subjectList[0].result, latestCount);
   chrome.runtime.sendMessage({
     type: 'ADD_FEED',
-    payload: { name, url, cssSelector: selector, subjectList: subjectList[0].result, latestCount }
+    payload: { name, url, cssSelector: selector }
+  }).then((res) => {
+    chrome.storage.local.remove(['tabId','savedSelector']);
+    tip.textContent = '已添加到 RSS 数据库';
+    selectorInfo.textContent = '';
+    confirmBtn.disabled = true;
+  }).catch(err => {
+    tip.textContent = '创建失败：' + err.toString();
   });
-  tip.textContent = '已添加到 RSS 数据库';
 };

@@ -7,7 +7,7 @@ const db = new RSSDatabase();
 (async () => {
   await db.init();
   isInitialized = true;
-
+  console.log('Background.js: IndexedDB initialized');
   // 初始化后自动导入follow.json数据
   try{
     await db.importFeedsFromFollowJson();
@@ -18,16 +18,14 @@ const db = new RSSDatabase();
 
 // 新增消息监听
 chrome.runtime.onMessage.addListener(async (message) => {
+  if (!isInitialized) {
+    await db.init();
+    isInitialized = true;
+  }
   // 发送开始loading状态
   chrome.runtime.sendMessage({type: 'FEEDS_UPDATE_START'});
 
   if (message.type === 'PAGE_REFRESH') {
-    console.log('PAGE_REFRESH -> ', isInitialized);
-    if (!isInitialized) {
-      await db.init();
-      isInitialized = true;
-    }
-
     try {
       const concurrentNumber = 3;
       const allFeeds = await db.getAllFeeds();
@@ -44,7 +42,14 @@ chrome.runtime.onMessage.addListener(async (message) => {
     }
   } else if (message.type === 'ADD_FEED') {
     try {
-      await handleFeedsUpdate(message.payload as RSSFeed)
+      const feedId = await db.addFeed({
+        ...message.payload as RSSFeed,
+        subjectList: [],
+      })
+      await handleFeedsUpdate({
+        ...message.payload as RSSFeed,
+        id: feedId,
+      })
       chrome.runtime.sendMessage({type: 'FEED_UPDATE_END', success: true});
     } catch (error) {
       chrome.runtime.sendMessage({type: 'FEED_UPDATE_END', success: false});
