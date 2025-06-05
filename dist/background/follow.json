@@ -1,0 +1,15 @@
+{
+  "version": "2",
+  "default": [
+    {
+      "name": "自己的 Github 主页",
+      "url": "https://github.com/",
+      "cssSelector": "article .lh-condensed .Link"
+    },
+    {
+      "name": "ruanyifeng 的博客",
+      "url": "https://www.ruanyifeng.com/blog/archives.html",
+      "cssSelector": ".module-list-item"
+    }
+  ]
+}

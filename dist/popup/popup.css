@@ -1,0 +1,6 @@
+#popup-root { min-width: 220px; padding: 12px; font-family: system-ui,sans-serif; }
+button { margin-right: 8px; padding: 6px 14px; border-radius: 4px; border: 1px solid #1ec41e; background: #fff; color: #1ec41e; cursor: pointer; transition: background .2s; }
+button:disabled { color: #aaa; border-color: #ccc; cursor: not-allowed; }
+button:not(:disabled):hover { background: #eaffea; }
+#selector-info { font-size: 13px; color: #222; word-break: break-all; }
+.rss-link-highlight { outline: 2px solid #1ec41e !important; background: rgba(30,196,30,0.08) !important; }
