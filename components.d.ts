@@ -26,7 +26,6 @@ declare module 'vue' {
     UModal: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
     UNavigationMenu: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/NavigationMenu.vue')['default']
     USeparator: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Separator.vue')['default']
-    UTabs: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Tabs.vue')['default']
     UTextarea: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Textarea.vue')['default']
     UTooltip: typeof import('./node_modules/.pnpm/@nuxt+ui@3.1.2_@babel+parser@7.27.2_embla-carousel@8.6.0_typescript@5.8.3_vite@5.4.19_lightni_myyysz6iqd7a562cdkevol6ljq/node_modules/@nuxt/ui/dist/runtime/components/Tooltip.vue')['default']
   }

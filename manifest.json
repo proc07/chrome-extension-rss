@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "我的自定义主页",
+  "name": "自定义 RSS 订阅",
   "version": "1.0",
-  "description": "RSS 新标签页",
+  "description": "RSS 订阅管理",
   "chrome_url_overrides": {
      "newtab": "./index.html"
   },

@@ -1,7 +1,7 @@
 <template>
   <UApp>
     <div class="fixed inset-0 flex overflow-hidden">
-      <div class="relative hidden lg:flex flex-col min-h-svh min-w-16 w-(--width) shrink-0 border-r border-default bg-elevated/25">
+      <div class="relative flex flex-col min-h-svh min-w-16 w-(--width) shrink-0 border-r border-default bg-elevated/25">
         <div class="flex flex-col gap-4 flex-1 overflow-y-auto px-4 py-2">
           <UNavigationMenu orientation="vertical" :items="navigationBarItems" class="data-[orientation=vertical]:w-48" />      
         </div>
@@ -56,42 +56,26 @@
         </div>
 
         <div class="flex flex-col h-full overflow-hidden">
-          <!-- 使用UTabs组件替换左侧Feed标题列表 -->
-          <UTabs
-            v-model="selectedFeed"
-            :items="feedTabItems"
-            orientation="vertical"
-            class="h-full items-start"
-            :ui="{
-              list: 'overflow-y-auto max-h-full',
-              trigger: 'w-full h-auto py-2 px-3'
-            }"
-          >
-            <template #default="{ item, index }">
-              <div class="flex justify-between w-full">
-                <UTooltip
-                  arrow
-                  :content="{ align: 'center', side: 'right', sideOffset: 8 }"
-                  :text="item.label"
-                >
-                  <span class="truncate">{{ item.label }}</span>
-                </UTooltip>
-                <UBadge v-if="item.badge && item.badge > 0" color="primary" size="xs">{{ item.badge }}</UBadge>
-              </div>
-            </template>
-            <template #content>
-              <!-- 右侧 Feed 内容 -->
-              <div class="flex-1 h-[calc(100vh-168px)] overflow-y-auto">
-                <FeedList 
-                  v-if="selectedFeed !== null && getFeedById(Number(selectedFeed))" 
-                  :data="getFeedById(Number(selectedFeed))" 
-                />
-                <div v-else class="flex items-center justify-center h-full text-gray-500">
-                  <p>请选择一个订阅源</p>
-                </div>
-              </div>
-            </template>
-          </UTabs>
+          <!-- Feed Header -->
+          <div v-if="selectedFeed !== null && getFeedById(selectedFeed)" class="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
+            <span class="font-semibold text-lg text-gray-800">{{ getFeedById(selectedFeed).name }}</span>
+            <UButton
+              icon="i-lucide-settings"
+              color="primary"
+              variant="ghost"
+              @click="onFeedSettingsClick"
+            />
+          </div>
+          <!-- 右侧 Feed 内容 -->
+          <div class="flex-1 h-[calc(100vh-168px)] overflow-y-auto">
+            <FeedList 
+              v-if="selectedFeed !== null && getFeedById(selectedFeed)" 
+              :data="getFeedById(selectedFeed)"
+            />
+            <div v-else class="flex items-center justify-center h-full text-gray-500">
+              <p>请选择一个订阅源</p>
+            </div>
+          </div>
         </div>
       
       </div>
@@ -197,22 +181,16 @@ const db = new RSSDatabase();
 const openRecommendModal = ref(false);
 const openUpdateModal = ref(false);
 const isFirstVisit = ref(false);
-const selectedFeed = ref<string | null>(null);
+const selectedFeed = ref<number | null>(null);
 
 // 根据ID获取Feed
 function getFeedById(id: number) {
   return allFeeds.value.find(feed => feed.id === id);
 }
 
-// 将allFeeds转换为TabsItem数组
-const feedTabItems = computed<TabsItem[]>(() => {
-  return allFeeds.value.map(feed => ({
-    label: feed.name,
-    value: String(feed.id),
-    badge: feed.latestCount
-  }));
-});
-
+function onFeedSettingsClick() {
+  openSubscribeModal.value = true
+}
 // 初始化数据库
 (async () => {
   await db.init();
@@ -222,7 +200,7 @@ const feedTabItems = computed<TabsItem[]>(() => {
   
   // 如果有订阅源，默认选择第一个
   if (allFeeds.value.length > 0) {
-    selectedFeed.value = String(allFeeds.value[0].id);
+    selectedFeed.value = allFeeds.value[0].id;
   }
 
   // 检查是否是首次访问
@@ -366,7 +344,7 @@ async function onDelete() {
     if (subscribeInfo.value.id !== -1) {
       await db.deleteFeed(subscribeInfo.value.id)
       allFeeds.value = await db.getAllFeeds()
-      selectedFeed.value = allFeeds.value[0]?.id?.toString() || null
+      selectedFeed.value = allFeeds.value[0]?.id || null
       toast.add({ color: 'primary', title: 'Deleted successfully' })
     }
     openSubscribeModal.value = false
@@ -400,18 +378,22 @@ async function onSubmit(event) {
     })
   }
 }
-
+// 动态添加订阅源到导航栏
 const subscribeIndex = navigationBarItems.value[0].findIndex(item => item.label === SUBSCRIBES)
 effect(() => {
   const newChildren = allFeeds.value.map(feed => ({
     label: feed.name,
     icon: 'i-lucide-rss',
     description: feed.url,
-    badge: feed.subjectList.length.toString(),
+    badge: feed.latestCount > 0 ? {
+      label: feed.latestCount,
+      color: 'primary',
+      variant: "solid"
+    } : undefined,
     onSelect(e: Event) {
       e.preventDefault()
-      openSubscribeModal.value = true
       subscribeInfo.value = feed
+      selectedFeed.value = feed.id
     }
   }))
   navigationBarItems.value[0][subscribeIndex].children = newChildren;
@@ -467,6 +449,16 @@ const stored = localStorage.getItem(LAST_UPDATE_TIME);
 if (stored) lastUpdateTime.value = Number(stored);
 
 onMounted(() => {
+  // 每天首次进入自动刷新 feeds
+  const now = new Date();
+  const today = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+  const LAST_REFRESH_DATE = 'lastRefreshDate';
+  const lastRefreshDate = localStorage.getItem(LAST_REFRESH_DATE);
+  if (lastRefreshDate !== today) {
+    refreshFeeds();
+    localStorage.setItem(LAST_REFRESH_DATE, today);
+  }
+
   chrome && chrome.runtime.onMessage.addListener((message) => {
     console.log('Received message:', message);
     if (message.type === 'FEEDS_UPDATE_START') {
