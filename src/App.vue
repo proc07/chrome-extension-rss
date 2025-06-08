@@ -201,6 +201,7 @@ function onFeedSettingsClick() {
   // 如果有订阅源，默认选择第一个
   if (allFeeds.value.length > 0) {
     selectedFeed.value = allFeeds.value[0].id;
+    subscribeInfo.value = allFeeds.value[0];
   }
 
   // 检查是否是首次访问
@@ -345,6 +346,7 @@ async function onDelete() {
       await db.deleteFeed(subscribeInfo.value.id)
       allFeeds.value = await db.getAllFeeds()
       selectedFeed.value = allFeeds.value[0]?.id || null
+      subscribeInfo.value = allFeeds.value[0];
       toast.add({ color: 'primary', title: 'Deleted successfully' })
     }
     openSubscribeModal.value = false
